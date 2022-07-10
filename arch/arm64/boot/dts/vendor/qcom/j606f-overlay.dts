@@ -1,0 +1,15 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include "bengal-idp.dtsi"
+#include "bengal-idp-pmi632.dtsi"
+
+#include "lenovo/bengal.dtsi"
+
+/ {
+	model = "Lenovo P11 WIFI PVT";
+	compatible = "qcom,bengalp-idp", "qcom,bengalp", "qcom,idp";
+	qcom,msm-id = <445 0x10000>, <420 0x10000>;
+	qcom,board-id = <34 3>;
+};

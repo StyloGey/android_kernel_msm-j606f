@@ -1,0 +1,48 @@
+&pmi632_gpios {
+	hq_hwid {
+		pmi632_gpio5_id2: pmi632_gpio5_id2 {
+			pins = "gpio5";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <0>;
+		};
+	};
+};
+
+&mtp_batterydata {
+	#include "battery/qg-batterydata-scud-7500mah.dtsi"
+	#include "battery/qg-batterydata-huaqin-ax2808-sunwoda-7500mah.dtsi"
+
+	qcom,alium_860_89032_0000_3600mAh {
+		status = "disabled";
+	};
+};
+
+&pmi632_charger {
+	/delete-property/ qcom,hw-die-temp-mitigation;
+	/delete-property/ qcom,hw-connector-mitigation;
+	/delete-property/ qcom,step-charging-enable;
+	/delete-property/ qcom,suspend-input-on-debug-batt;
+
+	qcom,thermal-mitigation = <2000000 1600000 1100000 500000>;
+	qcom,auto-recharge-soc = <95>;
+	qcom,chg-term-current-ma = <(-350)>;
+	qcom,chg-term-src = <1>;
+	qcom,disable-suspend-on-collapse;
+};
+
+&pmi632_qg {
+	io-channels = <&pmi632_vadc ADC_BAT_THERM_PU1>,
+			<&pmi632_vadc ADC_BAT_ID_PU2>;
+	qcom,qg-iterm-ma = <380>;
+};
+
+&smb1355_charger {
+	/delete-property/ qcom,hw-die-temp-mitigation;
+	pinctrl-0 = <&smb_en_default &pmi632_sense_default>;
+};
+
+&smb1355 {
+	interrupts = <69 IRQ_TYPE_LEVEL_LOW>;
+};
