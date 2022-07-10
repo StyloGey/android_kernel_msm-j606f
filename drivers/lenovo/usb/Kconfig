@@ -1,0 +1,7 @@
+if USB_SUPPORT
+
+source "drivers/lenovo/usb/fusb302b/Kconfig"
+
+source "drivers/lenovo/usb/typec/Kconfig"
+
+endif

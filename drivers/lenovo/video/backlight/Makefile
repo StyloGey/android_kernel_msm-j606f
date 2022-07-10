@@ -1,0 +1,2 @@
+obj-$(CONFIG_BACKLIGHT_SGM37604)	+= sgm37604a_driver.o
+obj-$(CONFIG_LCD_BIAS_TPS65132)		+= tps65132.o

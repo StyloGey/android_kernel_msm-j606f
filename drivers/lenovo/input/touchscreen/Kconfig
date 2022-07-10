@@ -1,0 +1,23 @@
+if INPUT_TOUCHSCREEN
+
+config TOUCHSCREEN_HIMAX_CHIPSET
+	bool "Himax touchpanel CHIPSET"
+	depends on SPI
+	help
+	  Say Y here if you have a Himax CHIPSET touchscreen.
+	  HIMAX controllers are multi touch controllers which can
+	  report 10 touches at a time.
+
+	  If unsure, say N.
+
+if TOUCHSCREEN_HIMAX_CHIPSET
+
+source "drivers/lenovo/input/touchscreen/himax83102p/Kconfig"
+
+endif
+
+config VITURALSAR
+	bool "Vitural Sar series"
+	depends on I2C
+
+endif

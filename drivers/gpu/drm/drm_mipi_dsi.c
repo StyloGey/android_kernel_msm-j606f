@@ -1058,7 +1058,11 @@ EXPORT_SYMBOL(mipi_dsi_dcs_set_tear_scanline);
 int mipi_dsi_dcs_set_display_brightness(struct mipi_dsi_device *dsi,
 					u16 brightness)
 {
+#if IS_ENABLED(CONFIG_TOUCHSCREEN_HIMAX_IC_HX83102)
+	u8 payload[2] = { brightness >> 8, brightness & 0xff };
+#else
 	u8 payload[2] = { brightness & 0xff, brightness >> 8 };
+#endif
 	ssize_t err;
 
 	err = mipi_dsi_dcs_write(dsi, MIPI_DCS_SET_DISPLAY_BRIGHTNESS,

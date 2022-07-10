@@ -1,0 +1,15 @@
+config LENOVO
+	bool "Lenovo drivers"
+	default n
+
+if LENOVO
+
+source "drivers/lenovo/input/Kconfig"
+
+source "drivers/lenovo/power/Kconfig"
+
+source "drivers/lenovo/usb/Kconfig"
+
+source "drivers/lenovo/video/Kconfig"
+
+endif

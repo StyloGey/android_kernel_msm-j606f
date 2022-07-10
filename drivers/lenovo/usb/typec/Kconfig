@@ -1,0 +1,5 @@
+if TYPEC
+
+source "drivers/lenovo/usb/typec/tcpc/Kconfig"
+
+endif
