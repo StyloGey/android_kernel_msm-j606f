@@ -528,7 +528,7 @@ static int smb1355_parse_dt(struct smb1355 *chip)
 	rc = of_property_read_u32(node,
 		"qcom,parallel-mode", &chip->dt.pl_mode);
 	if (rc < 0)
-		chip->dt.pl_mode = POWER_SUPPLY_PL_USBMID_USBMID;
+		chip->dt.pl_mode = POWER_SUPPLY_PL_USBIN_USBIN;
 
 	/*
 	 * If stacked-batfet property is not present default
@@ -810,11 +810,12 @@ static int smb1355_parallel_get_prop(struct power_supply *psy,
 		val->intval = chip->dt.pl_mode;
 		break;
 	case POWER_SUPPLY_PROP_CONNECTOR_HEALTH:
-		if (chip->c_health == -EINVAL)
-			rc = smb1355_get_prop_health_value(chip, val,
-							CONNECTOR_TEMP);
-		else
-			val->intval = chip->c_health;
+		//if (chip->c_health == -EINVAL)
+		//	rc = smb1355_get_prop_health_value(chip, val,
+		//					CONNECTOR_TEMP);
+		//else
+			pr_err("==========1355-health===val->intval[%d]======\r\n",val->intval);
+			val->intval = POWER_SUPPLY_HEALTH_GOOD;//chip->c_health;
 		break;
 	case POWER_SUPPLY_PROP_DIE_HEALTH:
 		rc = smb1355_get_prop_health_value(chip, val, DIE_TEMP);

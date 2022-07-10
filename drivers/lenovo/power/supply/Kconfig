@@ -1,0 +1,5 @@
+if POWER_SUPPLY
+
+source "drivers/lenovo/power/supply/qcom/Kconfig"
+
+endif

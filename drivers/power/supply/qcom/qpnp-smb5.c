@@ -24,6 +24,10 @@
 #include "smb5-lib.h"
 #include "schgm-flash.h"
 
+int cap_bak = 10;
+int tmp_bak = 250;
+int vol_bak;
+
 static struct smb_params smb5_pmi632_params = {
 	.fcc			= {
 		.name   = "fast charge current",
@@ -71,14 +75,14 @@ static struct smb_params smb5_pmi632_params = {
 		.name	= "jeita fcc reduction",
 		.reg	= JEITA_CCCOMP_CFG_HOT_REG,
 		.min_u	= 0,
-		.max_u	= 1575000,
+		.max_u	= 3575000,
 		.step_u	= 25000,
 	},
 	.jeita_cc_comp_cold	= {
 		.name	= "jeita fcc reduction",
 		.reg	= JEITA_CCCOMP_CFG_COLD_REG,
 		.min_u	= 0,
-		.max_u	= 1575000,
+		.max_u	= 3575000,
 		.step_u	= 25000,
 	},
 	.freq_switcher		= {
@@ -891,6 +895,8 @@ static enum power_supply_property smb5_usb_props[] = {
 	POWER_SUPPLY_PROP_APSD_TIMEOUT,
 	POWER_SUPPLY_PROP_CHARGER_STATUS,
 	POWER_SUPPLY_PROP_INPUT_VOLTAGE_SETTLED,
+	POWER_SUPPLY_PROP_set_typec_device,
+	POWER_SUPPLY_PROP_set_typec_host,
 };
 
 static int smb5_usb_get_prop(struct power_supply *psy,
@@ -1152,6 +1158,20 @@ static int smb5_usb_set_prop(struct power_supply *psy,
 		del_timer_sync(&chg->apsd_timer);
 		chg->apsd_ext_timeout = false;
 		smblib_rerun_apsd(chg);
+		break;
+	case POWER_SUPPLY_PROP_set_typec_host:
+		if (val->intval == 1) {
+			typec_partner_register(chg, 1);
+		} else {
+			typec_partner_unregister(chg);
+		}
+		break;
+	case POWER_SUPPLY_PROP_set_typec_device:
+		if (val->intval == 1) {
+			typec_partner_register(chg, 0);
+		} else {
+			typec_partner_unregister(chg);
+		}
 		break;
 	default:
 		pr_err("set prop %d is not supported\n", psp);
@@ -1738,6 +1758,7 @@ static enum power_supply_property smb5_batt_props[] = {
 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
 	POWER_SUPPLY_PROP_FCC_STEPPER_ENABLE,
+	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 };
 
 #define DEBUG_ACCESSORY_TEMP_DECIDEGC	250
@@ -1746,6 +1767,10 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 		union power_supply_propval *val)
 {
 	struct smb_charger *chg = power_supply_get_drvdata(psy);
+	struct power_supply *ext_psy = power_supply_get_by_name("mm8013");
+	union power_supply_propval reta = {
+		0,
+	};
 	int rc = 0;
 
 	switch (psp) {
@@ -1766,6 +1791,19 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
 		rc = smblib_get_prop_batt_capacity(chg, val);
+		if (ext_psy) {
+			reta.intval = cap_bak;
+			power_supply_get_property(
+				ext_psy, POWER_SUPPLY_PROP_batt_cap, &reta);
+			if (reta.intval != -99) {
+				val->intval = reta.intval;
+			}
+		}
+		if ((val->intval > 100) || (val->intval < 0)) {
+			val->intval = cap_bak;
+		} else {
+			cap_bak = val->intval;
+		}
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
 		rc = smblib_get_prop_system_temp_level(chg, val);
@@ -1791,6 +1829,17 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
 		rc = smblib_get_prop_from_bms(chg,
 				POWER_SUPPLY_PROP_VOLTAGE_NOW, val);
+		if (ext_psy) {
+			reta.intval = val->intval / 1000;
+			power_supply_get_property(
+				ext_psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &reta);
+			if ((reta.intval < 0) || (reta.intval > 4400)) {
+				val->intval = vol_bak;
+			} else {
+				val->intval = reta.intval * 1000;
+				vol_bak = val->intval;
+			}
+		}
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 		val->intval = get_client_vote(chg->fv_votable,
@@ -1805,6 +1854,12 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		rc = smblib_get_batt_current_now(chg, val);
+		if (ext_psy) {
+			reta.intval = val->intval / 1000;
+			power_supply_get_property(
+				ext_psy, POWER_SUPPLY_PROP_CURRENT_NOW, &reta);
+			val->intval = reta.intval * 1000;
+		}
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_QNOVO:
 		val->intval = get_client_vote_locked(chg->fcc_votable,
@@ -1826,6 +1881,17 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 		else
 			rc = smblib_get_prop_from_bms(chg,
 						POWER_SUPPLY_PROP_TEMP, val);
+		if (ext_psy) {
+			reta.intval = val->intval;
+			power_supply_get_property(
+				ext_psy, POWER_SUPPLY_PROP_TEMP, &reta);
+			if ((reta.intval >= 2550) || (reta.intval < -200)) {
+				val->intval = tmp_bak;
+			} else {
+				val->intval = reta.intval;
+			}
+		}
+		tmp_bak = val->intval;
 		break;
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
@@ -1889,6 +1955,14 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_FCC_STEPPER_ENABLE:
 		val->intval = chg->fcc_stepper_enable;
+		break;
+	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
+		val->intval = get_effective_result(chg->chg_disable_votable);
+		if (val->intval < 0) {
+			val->intval = 1;
+		} else {
+			val->intval = !val->intval;
+		}
 		break;
 	default:
 		pr_err("batt power supply prop %d not supported\n", psp);
@@ -2461,10 +2535,12 @@ static int smb5_configure_mitigation(struct smb_charger *chg)
 		}
 	}
 
-	rc = smblib_masked_write(chg, MISC_THERMREG_SRC_CFG_REG,
-		THERMREG_SW_ICL_ADJUST_BIT | THERMREG_DIE_ADC_SRC_EN_BIT |
-		THERMREG_DIE_CMP_SRC_EN_BIT | THERMREG_SKIN_ADC_SRC_EN_BIT |
-		SKIN_ADC_CFG_BIT | THERMREG_CONNECTOR_ADC_SRC_EN_BIT, src_cfg);
+	//rc = smblib_masked_write(chg, MISC_THERMREG_SRC_CFG_REG,
+	//	THERMREG_SW_ICL_ADJUST_BIT | THERMREG_DIE_ADC_SRC_EN_BIT |
+	//	THERMREG_DIE_CMP_SRC_EN_BIT | THERMREG_SKIN_ADC_SRC_EN_BIT |
+	//	SKIN_ADC_CFG_BIT | THERMREG_CONNECTOR_ADC_SRC_EN_BIT, src_cfg);
+
+	rc = smblib_write(chg, MISC_THERMREG_SRC_CFG_REG, 0);
 	if (rc < 0) {
 		dev_err(chg->dev,
 				"Couldn't configure THERM_SRC reg rc=%d\n", rc);
@@ -3746,6 +3822,10 @@ static int smb5_probe(struct platform_device *pdev)
 	}
 
 	device_init_wakeup(chg->dev, true);
+
+
+	typec_set_data_role(chg->typec_port, TYPEC_DEVICE);
+	typec_set_pwr_role(chg->typec_port, TYPEC_SINK);
 
 	pr_info("QPNP SMB5 probed successfully\n");
 

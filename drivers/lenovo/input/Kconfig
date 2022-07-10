@@ -1,0 +1,8 @@
+if INPUT
+
+config INPUT_HALL_SENSOR
+	tristate "hall sensor driver"
+
+source "drivers/lenovo/input/touchscreen/Kconfig"
+
+endif
