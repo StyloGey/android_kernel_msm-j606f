@@ -1,0 +1,107 @@
+#include <dt-bindings/sound/dbmdx-va-regmap.h>
+
+&tlmm {
+	dspg_ldo_active: dspg_ldo_active {
+		mux {
+			pins = "gpio52";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio52";
+			drive-strength = <16>;
+			bias-pull-up;
+			output-high;
+		};
+	};
+};
+
+&qupv3_se5_spi {
+	status = "ok";
+
+	dbmd8_spi: dbmd8_interface@0x0 {
+		compatible = "dspg,dbmd8-spi";
+		reg = <0x0>;
+		spi-max-frequency = <125000000>;
+		read-chunk-size = <0x2000>;
+		write-chunk-size = <0x8000>;
+		dma_min_buffer_size = <0>;
+		ldo-gpio = <&tlmm 52 0>;
+		princtrl-names = "ldo_active";
+		princtrl-0 = <&dspg_ldo_active>;
+		status = "ok";
+	};
+};
+
+&soc {
+	dbmdx {
+		compatible = "dspg,dbmdx-codec";
+		reset_gpio_shared = <0>;
+		reset-gpio = <&tlmm 60 0>;
+		sv-gpio = <&tlmm 70 0>;
+		wakeup-gpio = <&tlmm 31 0>;
+		auto_buffering = <1>;
+		multi-interface-support = <1>;
+		cd-interfaces = <&dbmd8_spi>;
+		va-interfaces = <0 0 0 0>;
+		feature-va_ve;
+		va-firmware-name = "dbmd8_va_fw.bin";
+		va-preboot-firmware-name = "dbmd8_va_preboot_fw.bin";
+		va-config = <DBMDX_VA_EMPTY_CMD
+			DBMDX_VA_EMPTY_CMD
+			DBMDX_VA_EMPTY_CMD
+			(DBMDX_REGN_HOST_INTERFACE_SUPPORT | 0x0020)
+			(DBMDX_REGN_MASTER_CLOCK_FREQUENCY | 0x0020)
+			(DBMDX_REGN_AUDIO_BUFFER_SIZE | 0x1800)
+			(DBMDX_REGN_GENERAL_CONFIG_1 | 0x1001)
+			(DBMDX_REGN_MEMORY_CONFIG | 0x0076)
+			DBMDX_REGN_GENERAL_CONFIG_2
+			(DBMDX_REGN_HPF_ENABLE_DISABLE | 0x0013)
+			(DBMDX_REGN_GPIO_CONFIG | 0x9494)
+			(DBMDX_REGN_DSP_CLOCK_CONFIG | 0x4002)
+			(DBMDX_VA_MSLEEP | 0x0040)
+			(DBMDX_REGN_UART_SPEED | 0x2710)
+			(DBMDX_REGN_FIRST_MICROPHONE_CONFIG | 0x0a48)
+			(DBMDX_REGN_SECOND_MICROPHONE_CONFIG | 0x0267)
+			(DBMDX_VA_MSLEEP | 0x0064)
+			DBMDX_REGN_SECOND_MICROPHONE_CONFIG
+			DBMDX_REGN_FIRST_MICROPHONE_CONFIG
+			DBMDX_VA_EMPTY_CMD
+			DBMDX_VA_EMPTY_CMD
+			DBMDX_VA_EMPTY_CMD>;
+		va-speeds = <0 460800 0 1000000 0 2000000 0 3000000 0 3000000 0 5000000>;
+		va-mic-config = <0x5076 0xa061 0xa48>;
+		va_ve-mic-config = <0x5076 0xa061 0xa093 0x00>;
+		va-mic-mode = <4>;
+		master-clk-rate = <32768>;
+		default_va_clock = <98304000>;
+		auto_detection = <1>;
+		firmware_id = <DBMDX_FIRMWARE_ID_DBMD8>;
+		wakeup_disabled = <0>;
+		use_gpio_for_wakeup = <1>;
+		send_wakeup_seq = <0>;
+		wakeup_set_value = <0>;
+		uart_low_speed_enabled = <1>;
+		detection_buffer_channels = <0>;
+		pcm_streaming_mode = <1>;
+		boot_options = <0x0220>;
+		send_uevent_on_detection = <1>;
+		send_uevent_after_buffering = <1>;
+		detection_after_buffering = <2>;
+		change_clock_src_options = <0x4003>;
+		va_backlog_length = <502>;
+		va_backlog_length_okg = <1000>;
+		low_power_mode_disabled = <0>;
+		hw_revision = <0>;
+		project_sub_type = <1>;
+		buffering_timeout = <5>;
+		default-streaming-usecase-name = "uc_melon_ga_2mic_aec_16k";
+		alsa_streaming_options = <8>;
+		asrp_tx_out_gain = <1439>;
+		asrp_vcpf_out_gain = <11516>;
+		asrp_rx_out_gain = <11516>;
+		asrp_delay = <1>;
+		amodel_options = <1>;
+		status = "ok";
+	};
+};
