@@ -1,0 +1,5 @@
+if HAS_IOMEM
+
+source "drivers/lenovo/video/backlight/Kconfig"
+
+endif

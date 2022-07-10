@@ -1,0 +1,5 @@
+config FUSB_30X
+	tristate "Fairchild FUSB30X Type-C chip driver"
+	depends on I2C
+	help
+	  This is a driver for the Fairchild FUSB302 Type-C chip.
