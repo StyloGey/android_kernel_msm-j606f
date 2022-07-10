@@ -1,0 +1,13 @@
+#include "panel/dsi-panel-nt36523w-boe-2k-video.dtsi"
+#include "panel/dsi-panel-himax83102p-boe-2k-video.dtsi"
+
+&sde_dsi {
+	/delete-property/ ibb-supply;
+	/delete-property/ lab-supply;
+	/delete-property/ qcom,panel-te-source;
+	/delete-property/ qcom,platform-te-gpio;
+
+	pinctrl-0 = <&sde_dsi_active>;
+	pinctrl-1 = <&sde_dsi_suspend>;
+	qcom,dsi-default-panel = <&dsi_himax83102p_2k_vid>;
+};

@@ -1,0 +1,35 @@
+&pm8008_8 {
+	status = "disabled";
+};
+
+&pm8008_chip {
+	status = "disabled";
+};
+
+&L1P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L2P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L3P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L4P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L5P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L6P {
+	qcom,hpm-min-load = <10000>;
+};
+
+&L7P {
+	qcom,hpm-min-load = <10000>;
+};

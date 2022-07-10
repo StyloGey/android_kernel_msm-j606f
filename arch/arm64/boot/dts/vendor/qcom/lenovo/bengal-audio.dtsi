@@ -1,0 +1,16 @@
+#include "dbmdx.dtsi"
+#include "msm-audio-lpass.dtsi"
+
+&bengal_snd {
+	qcom,mi2s-audio-intf = <1>;
+	qcom,tdm-audio-intf = <1>;
+	qcom,msm-mbhc-hphl-swh = <0>;
+	qcom,msm-mbhc-usbc-audio-supported = <1>;
+	qcom,msm-mi2s-master = <1>, <0>, <1>, <1>;
+	qcom,wsa-devs = <0>;
+	qcom,wsa-max-devs = <0>;
+	qcom,pri-mi2s-gpios = <&cdc_tdm1_gpios>;
+	qcom,sec-mi2s-gpios = <&cdc_sec_mi2s_gpios>;
+	qcom,cdc-dmic01-gpios = <0>;
+	qcom,cdc-dmic23-gpios = <0>;
+};
