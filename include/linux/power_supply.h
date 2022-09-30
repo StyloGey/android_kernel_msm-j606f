@@ -237,7 +237,6 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_usb_vbus_ctl,
 	POWER_SUPPLY_PROP_usb_device_ctl,
 	POWER_SUPPLY_PROP_usb_host_ctl,
-	POWER_SUPPLY_PROP_touchpad_switch,
 	POWER_SUPPLY_PROP_set_typec_device,
 	POWER_SUPPLY_PROP_set_typec_host,
 	POWER_SUPPLY_PROP_AUDIO_ACC,

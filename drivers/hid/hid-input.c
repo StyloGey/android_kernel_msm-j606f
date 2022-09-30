@@ -1043,6 +1043,11 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
 
 		case 0x29f: map_key_clear(KEY_SCALE);		break;
 
+		case 0x38d: map_key_clear(KEY_FULLSCREEN);	break;
+		case 0x38e: map_key_clear(KEY_SCREENLOCK);	break;
+		case 0x390: map_key_clear(KEY_SWITCHLANUAGE);	break;
+		case 0x38f: map_key_clear(KEY_NC);		break;
+
 		default: map_key_clear(KEY_UNKNOWN);
 		}
 		break;

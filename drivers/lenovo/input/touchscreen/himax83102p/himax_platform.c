@@ -17,7 +17,6 @@
 #include "himax_platform.h"
 #include "himax_common.h"
 
-bool himax_screen_off = false;
 int i2c_error_count;
 struct spi_device *spi;
 
@@ -1017,7 +1016,6 @@ int himax_drm_notifier_callback(struct notifier_block *self,
 				queue_work(ts->himax_drm_notify_wq,&ts->himax_drm_notify);
 			//himax_common_suspend(ts->dev);
 			//switch_screen_off(1);
-			himax_screen_off = true;
 			break;
 		}
 	}
@@ -1032,7 +1030,6 @@ int himax_drm_notifier_callback(struct notifier_block *self,
 			ts->ts_suspend = false;
 			queue_work(ts->himax_drm_notify_wq,&ts->himax_drm_notify);
 			//himax_common_resume(ts->dev);
-			himax_screen_off = false;
 			//switch_screen_off(0);
 			break;
 		}

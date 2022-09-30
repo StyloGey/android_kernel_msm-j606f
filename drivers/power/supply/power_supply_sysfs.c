@@ -355,7 +355,6 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(usb_vbus_ctl),
 	POWER_SUPPLY_ATTR(usb_device_ctl),
 	POWER_SUPPLY_ATTR(usb_host_ctl),
-	POWER_SUPPLY_ATTR(touchpad_switch),
 	POWER_SUPPLY_ATTR(set_typec_device),
 	POWER_SUPPLY_ATTR(set_typec_host),
 	POWER_SUPPLY_ATTR(AUDIO_ACC),
