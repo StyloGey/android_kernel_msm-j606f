@@ -227,7 +227,8 @@
 	mcu_pogo@60 {
 		compatible = "hid-over-i2c";
 		reg = <0x60>;
-		irq-gpio = <&tlmm 93 0>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <93 IRQ_TYPE_NONE>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&mcu_tp_int>;
 		hid-descr-addr = <1>;
@@ -324,9 +325,10 @@
 	mcu_pogo@61 {
 		compatible = "hid-over-i2c";
 		reg = <0x61>;
-		irq-gpio = <&tlmm 96 0>;
-		pinctrl-0 = <&mcu_kbd_int>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <96 IRQ_TYPE_EDGE_FALLING>;
 		pinctrl-names = "default";
+		pinctrl-0 = <&mcu_kbd_int>;
 		hid-descr-addr = <1>;
 		post-power-on-delay-ms = <100>;
 	};
