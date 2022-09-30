@@ -59,6 +59,7 @@
 #define I2C_HID_STARTED		0
 #define I2C_HID_RESET_PENDING	1
 #define I2C_HID_READ_PENDING	2
+#define I2C_HID_DISCONNECTED	3
 
 #define I2C_HID_PWR_ON		0x00
 #define I2C_HID_PWR_SLEEP	0x01
@@ -191,8 +192,14 @@ static const struct i2c_hid_quirks {
 		 I2C_HID_QUIRK_RESET_ON_RESUME },
 	{ USB_VENDOR_ID_ITE, I2C_DEVICE_ID_ITE_LENOVO_LEGION_Y720,
 		I2C_HID_QUIRK_BAD_INPUT_SIZE },
+	{ USB_VENDOR_ID_LENOVO, I2C_DEVICE_ID_LENOVO_P11_TAB_KB,
+		I2C_HID_QUIRK_NO_RUNTIME_PM },
 	{ 0, 0 }
 };
+
+#ifdef CONFIG_LENOVO
+struct i2c_hid *tp_ihid = NULL;
+#endif
 
 /*
  * i2c_hid_lookup_quirk: return any quirks associated with a I2C HID device
@@ -538,6 +545,31 @@ static void i2c_hid_get_input(struct i2c_hid *ihid)
 	}
 
 	i2c_hid_dbg(ihid, "input: %*ph\n", ret_size, ihid->inbuf);
+
+#ifdef CONFIG_LENOVO
+	if (test_bit(I2C_HID_DISCONNECTED, &ihid->flags)) {
+		if (ihid->inbuf[2] == 0x06 && ihid->inbuf[3] & 0x01) {
+			clear_bit(I2C_HID_DISCONNECTED, &ihid->flags);
+			hidinput_connect(ihid->hid, true);
+			if (tp_ihid) {
+				clear_bit(I2C_HID_DISCONNECTED,
+					  &tp_ihid->flags);
+				hidinput_connect(tp_ihid->hid, true);
+			}
+		}
+		return;
+	}
+
+	if (ihid->inbuf[2] == 0x06 && !(ihid->inbuf[3] & 0x01)) {
+		hidinput_disconnect(ihid->hid);
+		set_bit(I2C_HID_DISCONNECTED, &ihid->flags);
+		if (tp_ihid) {
+			hidinput_disconnect(tp_ihid->hid);
+			set_bit(I2C_HID_DISCONNECTED, &tp_ihid->flags);
+		}
+		return;
+	}
+#endif
 
 	if (test_bit(I2C_HID_STARTED, &ihid->flags))
 		hid_input_report(ihid->hid, HID_INPUT_REPORT, ihid->inbuf + 2,
@@ -1173,6 +1205,20 @@ static int i2c_hid_probe(struct i2c_client *client,
 		goto err_mem_free;
 	}
 
+#ifdef CONFIG_LENOVO
+	hidinput_disconnect(ihid->hid);
+	set_bit(I2C_HID_DISCONNECTED, &ihid->flags);
+
+	if (hid->vendor == USB_VENDOR_ID_ELAN &&
+	    hid->product == I2C_DEVICE_ID_LENOVO_P11_TAB_TP) {
+		/*
+		 * Keyboard and touchpad need to be connected/disconnected together
+		 * as only the keyboard reports about the connection status.
+		 */
+		tp_ihid = ihid;
+	}
+#endif
+
 	if (!(ihid->quirks & I2C_HID_QUIRK_NO_RUNTIME_PM))
 		pm_runtime_put(&client->dev);
 
@@ -1208,6 +1254,13 @@ static int i2c_hid_remove(struct i2c_client *client)
 
 	hid = ihid->hid;
 	hid_destroy_device(hid);
+
+#ifdef CONFIG_LENOVO
+	if (hid->vendor == USB_VENDOR_ID_ELAN &&
+	    hid->product == I2C_DEVICE_ID_LENOVO_P11_TAB_TP) {
+		tp_ihid = NULL;
+	}
+#endif
 
 	free_irq(client->irq, ihid);
 
