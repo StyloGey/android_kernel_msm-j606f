@@ -233,6 +233,7 @@
 		pinctrl-0 = <&mcu_tp_int>;
 		hid-descr-addr = <1>;
 		post-power-on-delay-ms = <100>;
+		status = "disabled";
 	};
 
 	mm8013@55 {
@@ -331,6 +332,7 @@
 		pinctrl-0 = <&mcu_kbd_int>;
 		hid-descr-addr = <1>;
 		post-power-on-delay-ms = <100>;
+		status = "disabled";
 	};
 
 	sgm37604a@36 {
